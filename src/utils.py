@@ -5,6 +5,7 @@ import torchvision
 from ruamel.yaml import safe_load
 import numpy as np
 import torch.nn.functional as F
+import torch
 
 # def
 
@@ -57,3 +58,17 @@ def pad_waveform(waveform, max_waveform_length):
     pad = (int(np.ceil(diff/2)), int(np.floor(diff/2)))
     waveform = F.pad(input=waveform, pad=pad)
     return waveform
+
+
+def load_checkpoint(model, use_cuda, checkpoint_path):
+    map_location = torch.device(
+        device='cuda') if use_cuda else torch.device(device='cpu')
+    checkpoint = torch.load(f=checkpoint_path, map_location=map_location)
+    if model.loss_function.weight is None:
+        # delete the loss_function.weight in the checkpoint, because this key does not work while loading the model.
+        del checkpoint['state_dict']['loss_function.weight']
+    else:
+        # assign the new loss_function weight to the checkpoint
+        checkpoint['state_dict']['loss_function.weight'] = model.loss_function.weight
+    model.load_state_dict(checkpoint['state_dict'])
+    return model
