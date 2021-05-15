@@ -1,9 +1,9 @@
 # import
 import argparse
 import torch
-from os.path import abspath, join
+from os.path import abspath, isfile, join
 from os import makedirs
-import numpy as np
+from timm import list_models
 
 # class
 
@@ -46,6 +46,14 @@ class ProjectParameters:
             '--no_balance', action='store_true', default=False, help='whether to balance the data.')
         self._parser.add_argument('--transform_config_path', type=self._str_to_str,
                                   default='config/transform.yaml', help='the transform config path.')
+
+        # model
+        self._parser.add_argument('--backbone_model', type=str, required=True,
+                                  help='if you want to use a self-defined model, give the path of the self-defined model. otherwise, the provided backbone model is as a followed list. {}'.format(list_models()))
+        self._parser.add_argument('--checkpoint_path', type=str, default=None,
+                                  help='the path of the pre-trained model checkpoint.')
+        self._parser.add_argument('--optimizer_config_path', type=str,
+                                  default='config/optimizer.yaml', help='the optimizer config path.')
 
         # debug
         self._parser.add_argument(
@@ -96,6 +104,13 @@ class ProjectParameters:
         if project_parameters.transform_config_path is not None:
             project_parameters.transform_config_path = abspath(
                 project_parameters.transform_config_path)
+
+        # model
+        project_parameters.optimizer_config_path = abspath(
+            project_parameters.optimizer_config_path)
+        if isfile(project_parameters.backbone_model):
+            project_parameters.backbone_model = abspath(
+                project_parameters.backbone_model)
 
         return project_parameters
 
