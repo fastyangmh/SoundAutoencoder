@@ -53,12 +53,11 @@ class AutoEncoder(nn.Module):
 
     def forward(self, x, y):
         code = self.encoder(x)
-        y_hat = self.classifier(code.detach())
+        y_hat = self.classifier(code)
         _, channels, _ = code.shape
         code = torch.cat(
             (code, torch.cat([y[:, None]]*channels, 1)[:, :, None]), -1)
         output = self.decoder(code)
-        y_hat *= output[:, :, -1].detach()
         return output, y_hat
 
 
