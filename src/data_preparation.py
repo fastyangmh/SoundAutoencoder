@@ -32,9 +32,7 @@ class AudioFolder(DatasetFolder):
         else:
             data = data[:, :self.project_parameters.max_waveform_length]
         if self.transform is not None:
-            data = self.transform['audio'](data)
-            if 'vision' in self.transform:
-                data = self.transform['vision'](data)
+            data = self.transform(data)
         return data, label
 
 
@@ -56,9 +54,7 @@ class SPEECHCOMMANDS(SPEECHCOMMANDS):
         else:
             data = data[:, :self.project_parameters.max_waveform_length]
         if self.transform is not None:
-            data = self.transform['audio'](data)
-            if 'vision' in self.transform:
-                data = self.transform['vision'](data)
+            data = self.transform(data)
         return data, self.class_to_idx[label]
 
 
