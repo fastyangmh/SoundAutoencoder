@@ -58,7 +58,6 @@ class AutoEncoder(nn.Module):
         code = torch.cat(
             (code, torch.cat([y[:, None]]*channels, 1)[:, :, None]), -1)
         output = self.decoder(code)
-        y_hat *= output[:, :, -1]
         return output, y_hat
 
 
