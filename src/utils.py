@@ -1,7 +1,7 @@
 # import
 from os.path import isfile, join
 import torch.nn as nn
-import torchvision
+import torchaudio
 from ruamel.yaml import safe_load
 import numpy as np
 import torch.nn.functional as F
@@ -24,30 +24,21 @@ def get_transform_from_file(filepath):
         transform_dict = {}
         transform_config = load_yaml(filepath=filepath)
         for stage in transform_config.keys():
-            transform_dict[stage] = {}
+            transform_dict[stage] = []
             if type(transform_config[stage]) != dict:
                 transform_dict[stage] = None
                 continue
-            for transform_type in transform_config[stage].keys():
-                temp = []
-                for name, value in transform_config[stage][transform_type].items():
-                    if transform_type not in ['audio', 'vision']:
-                        assert False, 'please check the transform config.'
-                    module_name = 'torchaudio.transforms' if transform_type == 'audio' else 'torchvision.transforms'
-                    if value is None:
-                        temp.append(eval('{}.{}()'.format(module_name, name)))
-                    else:
-                        if type(value) is dict:
-                            value = ('{},'*len(value)).format(*
-                                                              ['{}={}'.format(a, b) for a, b in value.items()])
-                        temp.append(
-                            eval('{}.{}({})'.format(module_name, name, value)))
-                if transform_type == 'audio':
-                    transform_dict[stage][transform_type] = nn.Sequential(
-                        *temp)
-                elif transform_type == 'vision':
-                    transform_dict[stage][transform_type] = torchvision.transforms.Compose(
-                        temp)
+            for name, value in transform_config[stage].items():
+                if value is None:
+                    transform_dict[stage].append(
+                        eval('torchaudio.transforms.{}()'.format(name)))
+                else:
+                    if type(value) is dict:
+                        value = ('{},'*len(value)).format(*
+                                                          ['{}={}'.format(a, b) for a, b in value.items()])
+                    transform_dict[stage].append(
+                        eval('torchaudio.transforms.{}({})'.format(name, value)))
+            transform_dict[stage] = nn.Sequential(*transform_dict[stage])
         return transform_dict
     else:
         assert False, 'please check the transform config path: {}'.format(
